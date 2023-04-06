@@ -1,0 +1,31 @@
+﻿@model Sorting_App.Models.ElementComparison
+
+@{
+    ViewData["Title"] = "Compare";
+}
+
+<hr />
+<div class="flex-container">
+    <div class="tags">
+        @if (Model.FirstElement.Element.Image != null)
+        {
+            <img src="data:image/png;base64,@Convert.ToBase64String(Model.FirstElement.Element.Image)" class="img-fluid" />
+        }
+        @Html.DisplayFor(model => model.FirstElement.Element.Name)
+    </div>
+    <div class="tags">
+        @if (Model.SecondElement.Element.Image != null)
+        {
+            <img src="data:image/png;base64,@Convert.ToBase64String(Model.SecondElement.Element.Image)" class="img-fluid" />
+        }
+        @Html.DisplayFor(model => model.SecondElement.Element.Name)
+    </div>
+</div>
+<div class="align-content-center">
+    <a asp-action="Results" asp-route-id="@Model?.ID" asp-route-degree="3">&lt;&lt;&lt;</a> |
+    <a asp-action="Results" asp-route-id="@Model?.ID" asp-route-degree="2">&lt;&lt;</a> |
+    <a asp-action="Results" asp-route-id="@Model?.ID" asp-route-degree="1">&lt;</a> |
+    <a asp-action="Results" asp-route-id="@Model?.ID" asp-route-degree="-1">&gt;</a> |
+    <a asp-action="Results" asp-route-id="@Model?.ID" asp-route-degree="-2">&gt;&gt;</a> |
+    <a asp-action="Results" asp-route-id="@Model?.ID" asp-route-degree="-3">&gt;&gt;&gt;</a> |
+</div>
