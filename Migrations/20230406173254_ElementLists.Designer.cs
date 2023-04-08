@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Sorting_App.Data;
 
@@ -11,9 +12,11 @@ using Sorting_App.Data;
 namespace Sorting_App.Migrations
 {
     [DbContext(typeof(SortingContext))]
-    partial class SortingContextModelSnapshot : ModelSnapshot
+    [Migration("20230406173254_ElementLists")]
+    partial class ElementLists
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -183,9 +186,6 @@ namespace Sorting_App.Migrations
 
                     b.Property<int>("ElementListID")
                         .HasColumnType("int");
-
-                    b.Property<bool>("IsSorted")
-                        .HasColumnType("bit");
 
                     b.Property<int>("SelectionCount")
                         .HasColumnType("int");

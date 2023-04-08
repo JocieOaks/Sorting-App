@@ -6,23 +6,36 @@ namespace Sorting_App.Data
 {
     public class SortingContext : DbContext
     {
-        public DbSet<Element> Elements { get; set; }
-
-        public DbSet<ElementTag> Tags { get; set; }
-
-        public DbSet<Sort> Sorts { get; set; }
-
-        public DbSet<ElementList> ElementLists { get; set; }
+        public SortingContext(DbContextOptions<SortingContext> options) : base(options) { }
 
         public DbSet<ElementComparison> ElementComparisons { get; set; }
 
+        public DbSet<ElementList> ElementLists { get; set; }
+
+        public DbSet<Element> Elements { get; set; }
+
         public DbSet<SelectElement> SelectElements { get; set; }
 
-        public SortingContext(DbContextOptions<SortingContext> options) : base(options) {}
+        public DbSet<Sort> Sorts { get; set; }
 
+        public DbSet<ElementTag> Tags { get; set; }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.EnableSensitiveDataLogging();
+            //optionsBuilder.EnableSensitiveDataLogging();
+        }
+
+        public void RemoveSort(Sort sort)
+        {
+            RemoveRange(sort.ElementComparisons);
+            RemoveRange(sort.SelectElements);
+            Remove(sort);
+        }
+
+        public void RemoveElement(Element element)
+        {
+            ElementComparisons.RemoveRange(ElementComparisons.ToList().FindAll(x => x.HasElement(element)));
+            SelectElements.RemoveRange(SelectElements.ToList().FindAll(x => x.Element == element));
+            Elements.Remove(element);
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -39,7 +52,5 @@ namespace Sorting_App.Data
 
             base.OnModelCreating(modelBuilder);
         }
-
-        public DbSet<Sorting_App.Models.ElementList>? ElementList { get; set; }
     }
 }

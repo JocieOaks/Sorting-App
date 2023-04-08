@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Linq;
 using Sorting_App.Data;
 using Sorting_App.Models;
+using Select_Sort;
 
 namespace Sorting_App.Controllers
 {
@@ -19,26 +20,6 @@ namespace Sorting_App.Controllers
         public ElementsController(SortingContext context)
         {
             _context = context;
-        }
-
-        // GET: Elements
-        public async Task<IActionResult> Index(int? id)
-        {
-            if (id == null || _context.ElementList == null)
-            {
-                return NotFound();
-            }
-
-            ElementList? elementList = await _context.ElementList
-                .Include(list => list.Elements).ThenInclude(element => element.Tags)
-                .Include(list => list.Tags)
-                .FirstOrDefaultAsync(m => m.ID == id.Value);
-            if(elementList == null)
-            {
-                return NotFound();
-            }
-
-            return View(elementList);
         }
 
         // GET: Elements/Details/5
@@ -121,7 +102,7 @@ namespace Sorting_App.Controllers
                 _context.Add(element);
                 _context.Update(elementList);
                 await _context.SaveChangesAsync();
-                return RedirectToAction("Index", new {id = listID});
+                return RedirectToAction("Details", "ElementLists", new {id = listID});
             }
             return View(element);
         }
@@ -156,7 +137,7 @@ namespace Sorting_App.Controllers
             if (listID == null || _context.ElementLists == null)
                 return NotFound();
 
-            var elementList = await _context.ElementLists.Include(list => list.Elements).Include(list => list.Tags)
+            var elementList = await _context.ElementLists.Include(list => list.Tags)
                 .FirstOrDefaultAsync(m => m.ID == listID);
             if (elementList == null)
             {
@@ -186,13 +167,14 @@ namespace Sorting_App.Controllers
                             if (tag == default)
                             {
                                 tag = new ElementTag() { Tag = tagName, Elements = new List<Element>() { element } };
-                                _context.Add(tag);
+                                elementList.Tags.Add(tag);
                             }
                             element.Tags.Add(tag);
                         }
                     }
 
                     _context.Update(element);
+                    _context.Update(elementList);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
@@ -206,7 +188,7 @@ namespace Sorting_App.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction("Index", new {id = listID});
+                return RedirectToAction("Details", "ElementLists", new { id = listID });
             }
             return View(element);
         }
@@ -243,15 +225,13 @@ namespace Sorting_App.Controllers
 
             if (element != null)
             {
-                _context.ElementComparisons.RemoveRange(_context.ElementComparisons.ToList().FindAll(x => x.FirstElement.Element == element || x.SecondElement.Element == element));
-                _context.SelectElements.RemoveRange(_context.SelectElements.ToList().FindAll(x => x.Element == element));
-                _context.Elements.Remove(element);
+                _context.RemoveElement(element);
             }
 
             await _context.SaveChangesAsync();
             if (element != null)
             {
-                return RedirectToAction("Index", new { id = element.List.ID });
+                return RedirectToAction("Details", "ElementLists", new { id = element.List.ID });
             }
             else
                 return RedirectToAction("Index", "ElementLists");

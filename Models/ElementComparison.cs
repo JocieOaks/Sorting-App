@@ -40,6 +40,11 @@ namespace Sorting_App.Models
             return element == FirstElement || element == SecondElement;
         }
 
+        public bool HasElement(Element element)
+        {
+            return element == FirstElement.Element || element == SecondElement.Element;
+        }
+
         public bool HasElements(SelectElement element1, SelectElement element2)
         {
             return element1 == FirstElement && element2 == SecondElement || element2 == FirstElement && element1 == SecondElement;

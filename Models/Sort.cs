@@ -10,6 +10,8 @@
 
         public List<SelectElement> SelectElements { get; set; }
 
+        public bool IsSorted { get; set; } = false;
+
         public int SelectionCount { get; set; }
     }
 }

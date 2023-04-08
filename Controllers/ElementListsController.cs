@@ -24,20 +24,29 @@ namespace Sorting_App.Controllers
         // GET: ElementLists
         public async Task<IActionResult> Index()
         {
-              return _context.ElementList != null ? 
-                          View(await _context.ElementList.ToListAsync()) :
+              return _context.ElementLists != null ? 
+                          View(await _context.ElementLists.ToListAsync()) :
                           Problem("Entity set 'SortingContext.ElementList'  is null.");
         }
 
         // GET: ElementLists/Details/5
-        public IActionResult Details(int? id)
+        public async Task<IActionResult> Details(int? id)
         {
-            if (id == null || _context.ElementList == null)
+            if (id == null || _context.ElementLists == null)
             {
                 return NotFound();
             }
-
-            return RedirectToAction("Index","Elements", new { id });
+            ElementList? elementList = await _context.ElementLists
+                .Include(list => list.Elements).ThenInclude(element => element.Tags)
+                .Include(list => list.Tags)
+                .Include(list => list.Sorts).ThenInclude(sort => sort.ElementComparisons)
+                .Include(list => list.Sorts).ThenInclude(sort => sort.SelectElements)
+                .FirstOrDefaultAsync(m => m.ID == id.Value);
+            if(elementList == null)
+            {
+                return NotFound();
+            }
+            return View(elementList);
         }
 
         // GET: ElementLists/Create
@@ -72,12 +81,12 @@ namespace Sorting_App.Controllers
         // GET: ElementLists/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null || _context.ElementList == null)
+            if (id == null || _context.ElementLists == null)
             {
                 return NotFound();
             }
 
-            var elementList = await _context.ElementList.FindAsync(id);
+            var elementList = await _context.ElementLists.FindAsync(id);
             if (elementList == null)
             {
                 return NotFound();
@@ -130,12 +139,12 @@ namespace Sorting_App.Controllers
         // GET: ElementLists/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null || _context.ElementList == null)
+            if (id == null || _context.ElementLists == null)
             {
                 return NotFound();
             }
 
-            var elementList = await _context.ElementList
+            var elementList = await _context.ElementLists
                 .FirstOrDefaultAsync(m => m.ID == id);
             if (elementList == null)
             {
@@ -147,17 +156,17 @@ namespace Sorting_App.Controllers
 
         public async Task<IActionResult> StartSort(int? id)
         {
-            _context.ElementComparisons.RemoveRange(_context.ElementComparisons);
-            _context.SelectElements.RemoveRange(_context.SelectElements);
-            _context.Sorts.RemoveRange(_context.Sorts);
-            await _context.SaveChangesAsync();
+            foreach(Sort s in _context.Sorts.Include(e => e.SelectElements).Include(e => e.ElementComparisons))
+            {
+                _context.RemoveSort(s);
+            }
 
-            if (id == null || _context.ElementList == null)
+            if (id == null || _context.ElementLists == null)
             {
                 return NotFound();
             }
 
-            var elementList = await _context.ElementList.Include(list => list.Elements)/*.AsNoTrackingWithIdentityResolution()*/.FirstOrDefaultAsync(m => m.ID == id.Value);
+            var elementList = await _context.ElementLists.Include(list => list.Elements)/*.AsNoTrackingWithIdentityResolution()*/.FirstOrDefaultAsync(m => m.ID == id.Value);
             if (elementList == null)
             {
                 return NotFound();
@@ -181,7 +190,7 @@ namespace Sorting_App.Controllers
                 return NotFound();
             }
 
-            var sort = await _context.Sorts.Include(sort => sort.ElementComparisons).FirstOrDefaultAsync(m => m.ID == id.Value);
+            var sort = await _context.Sorts.Include(sort => sort.ElementComparisons).Include(sort => sort.ElementList).FirstOrDefaultAsync(m => m.ID == id.Value);
             if (sort == null)
             {
                 return NotFound();
@@ -193,7 +202,10 @@ namespace Sorting_App.Controllers
 
             if (elementComparison == null)
             {
-                throw new NotImplementedException();
+                sort.IsSorted = true;
+                _context.Update(sort);
+                await _context.SaveChangesAsync();
+                return RedirectToAction("Details", new { id = sort.ElementList.ID});
             }
             else
                 return View(elementComparison);
@@ -235,14 +247,14 @@ namespace Sorting_App.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (_context.ElementList == null)
+            if (_context.ElementLists == null)
             {
                 return Problem("Entity set 'SortingContext.ElementList'  is null.");
             }
-            var elementList = await _context.ElementList.FindAsync(id);
+            var elementList = await _context.ElementLists.FindAsync(id);
             if (elementList != null)
             {
-                _context.ElementList.Remove(elementList);
+                _context.ElementLists.Remove(elementList);
             }
             
             await _context.SaveChangesAsync();
@@ -251,7 +263,7 @@ namespace Sorting_App.Controllers
 
         private bool ElementListExists(int id)
         {
-          return (_context.ElementList?.Any(e => e.ID == id)).GetValueOrDefault();
+          return (_context.ElementLists?.Any(e => e.ID == id)).GetValueOrDefault();
         }
     }
 }

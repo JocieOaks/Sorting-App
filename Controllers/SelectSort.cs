@@ -257,7 +257,7 @@ namespace Select_Sort
             for (int i = low; i <= high; i++)
             {
                 SelectElement element = list[i];
-                if (comparisons[pivotIndex, element.Index] > 0)
+                if (comparisons[pivotIndex, element.Index] < 0)
                 {
                     (list[low], list[i]) = (element, list[low]);
                     low++;
