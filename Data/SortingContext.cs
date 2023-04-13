@@ -19,6 +19,7 @@ namespace Sorting_App.Data
         public DbSet<Sort> Sorts { get; set; }
 
         public DbSet<ElementTag> Tags { get; set; }
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             //optionsBuilder.EnableSensitiveDataLogging();
@@ -29,6 +30,19 @@ namespace Sorting_App.Data
             RemoveRange(sort.ElementComparisons);
             RemoveRange(sort.SelectElements);
             Remove(sort);
+        }
+
+        public void VerifyTag(ElementTag tag)
+        {
+            Entry(tag.List).Collection(list => list.Elements).Load();
+            foreach(var element in tag.List.Elements)
+            {
+                Entry(element).Collection(e => e.Tags!).Load();
+                if (element.Tags!.Any(x => x == tag))
+                    return;
+            }
+            Tags.Remove(tag);
+            SaveChanges();
         }
 
         public void RemoveElement(Element element)

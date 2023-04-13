@@ -10,6 +10,9 @@ using Newtonsoft.Json.Linq;
 using Sorting_App.Data;
 using Sorting_App.Models;
 using Select_Sort;
+using Sorting_App.Migrations;
+using System.Xml.Linq;
+using Azure;
 
 namespace Sorting_App.Controllers
 {
@@ -82,20 +85,7 @@ namespace Sorting_App.Controllers
                         element.Image = ms.ToArray();
                     }
 
-                element.Tags = new();
-                if (tagsString != null)
-                {
-                    foreach (var tagName in tagsString.Split(','))
-                    {
-                        ElementTag? tag = elementList.Tags.FirstOrDefault(x => x.Tag == tagName);
-                        if (tag == default)
-                        {
-                            tag = new ElementTag() { Tag = tagName, Elements = new List<Element>() { element } };
-                            elementList.Tags.Add(tag);
-                        }
-                        element.Tags.Add(tag);
-                    }
-                }
+                GetTags(tagsString, element, elementList);
 
                 elementList.Elements.Add(element);
                 element.List = elementList;
@@ -128,69 +118,56 @@ namespace Sorting_App.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("ID,Name,List")] Element element, IFormFile? image, string? tagsString, int? listID)
+        public async Task<IActionResult> Edit(int? id, string Name, IFormFile? image, string? tagsString, int? listID)
         {
-            if (id != element.ID)
+            if (id == null || _context.Elements == null)
             {
                 return NotFound();
             }
-            if (listID == null || _context.ElementLists == null)
-                return NotFound();
+            
+            var element = await _context.Elements
+                .Include(element => element.Tags)
+                .Include(element => element.List).ThenInclude(list => list.Tags)
+                .FirstOrDefaultAsync(element => element.ID == id);
 
-            var elementList = await _context.ElementLists.Include(list => list.Tags)
-                .FirstOrDefaultAsync(m => m.ID == listID);
+            if(element == null)
+            {
+                return NotFound();
+            }
+
+            var elementList = element.List;
             if (elementList == null)
             {
                 return NotFound();
             }
-            element.List = elementList;
 
-            if (ModelState.IsValid)
+            try
             {
-                try
-                {
-                    if (image != null)
-                        using (var ms = new MemoryStream())
-                        {
-                            image.CopyTo(ms);
-                            element.Image = ms.ToArray();
-                        }
-
-                    List<ElementTag> contextTags = await _context.Tags.ToListAsync();
-
-                    element.Tags = new();
-                    if (tagsString != null)
+                if (image != null)
+                    using (var ms = new MemoryStream())
                     {
-                        foreach (var tagName in tagsString.Split(','))
-                        {
-                            ElementTag? tag = contextTags.FirstOrDefault(x => x.Tag == tagName);
-                            if (tag == default)
-                            {
-                                tag = new ElementTag() { Tag = tagName, Elements = new List<Element>() { element } };
-                                elementList.Tags.Add(tag);
-                            }
-                            element.Tags.Add(tag);
-                        }
+                        image.CopyTo(ms);
+                        element.Image = ms.ToArray();
                     }
 
-                    _context.Update(element);
-                    _context.Update(elementList);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!ElementExists(element.ID))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction("Details", "ElementLists", new { id = listID });
+                GetTags(tagsString, element, elementList);
+
+                _context.Update(element);
+                _context.Update(elementList);
+                await _context.SaveChangesAsync();
             }
-            return View(element);
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!ElementExists(element.ID))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+            return RedirectToAction("Details", "ElementLists", new { id = listID });
         }
 
         // GET: Elements/Delete/5
@@ -240,6 +217,55 @@ namespace Sorting_App.Controllers
         private bool ElementExists(int id)
         {
           return (_context.Elements?.Any(e => e.ID == id)).GetValueOrDefault();
+        }
+
+        private void GetTags(string? tagString, Element element, ElementList elementList)
+        {
+            if (tagString != null)
+            {
+                string[] tags = tagString.Split(',');
+                for(int i = 0; i < tags.Length; i++)
+                {
+                    tags[i] = tags[i].Trim();
+                }
+
+                if(element.Tags != null)
+                {
+                    IEnumerable<ElementTag> removeTags = element.Tags.Where(x => !tags.Any(y => x.Tag == y));
+                    foreach(var tag in removeTags)
+                    {
+                        element.Tags.Remove(tag);
+                        _context.VerifyTag(tag);
+                    }
+                }
+
+                foreach (var tagName in tags.Where(x => !element.Tags?.Any(y => x == y.Tag) ?? true))
+                {
+                    ElementTag? tag = elementList.Tags.FirstOrDefault(x => x.Tag == tagName);
+                    if (tag == default)
+                    {
+                        tag = new ElementTag() { Tag = tagName, Elements = new List<Element>() { element } };
+                        elementList.Tags.Add(tag);
+                    }
+                    element.Tags!.Add(tag);
+                }
+            }
+            else
+            {
+                if(element.Tags == null)
+                {
+                    element.Tags = new();
+                }
+                else
+                {
+                    List<ElementTag> copy = new(element.Tags);
+                    element.Tags.Clear();
+                    foreach(var tag in copy)
+                    {
+                        _context.VerifyTag(tag);
+                    }       
+                }
+            }
         }
     }
 }

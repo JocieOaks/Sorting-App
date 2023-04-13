@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Sorting_App.Data;
 using Sorting_App.Models;
 using Select_Sort;
+using static Azure.Core.HttpHeader;
 
 namespace Sorting_App.Controllers
 {
@@ -41,12 +42,50 @@ namespace Sorting_App.Controllers
                 .Include(list => list.Tags)
                 .Include(list => list.Sorts).ThenInclude(sort => sort.ElementComparisons)
                 .Include(list => list.Sorts).ThenInclude(sort => sort.SelectElements)
+                .AsSplitQuery()
                 .FirstOrDefaultAsync(m => m.ID == id.Value);
             if(elementList == null)
             {
                 return NotFound();
             }
-            return View(elementList);
+            IEnumerable<string>? tags;
+            if (TempData.ContainsKey("tags"))
+                tags = (IEnumerable<string>?)TempData["tags"];
+            else
+                tags = null;
+            return View((elementList, tags));
+        }
+
+        //[HttpPost]
+        public IActionResult Constrain(int? id, string? tag)
+        {
+            if(tag == null)
+            {
+                return NotFound();
+            }
+
+            List<string> stringTags;
+
+            if (!TempData.ContainsKey("tags"))
+                stringTags = new List<string>() { tag };
+            else
+            {
+                stringTags = (TempData["tags"] as IEnumerable<string>)!.ToList();
+                if (stringTags.Contains(tag))
+                    stringTags.Remove(tag);
+                else
+                    stringTags.Add(tag);
+            }
+
+            TempData["tags"] = stringTags;
+            return RedirectToAction("Details", new { id});
+        }
+
+        public IActionResult ClearTags(int? id)
+        {
+            TempData.Remove("tags");
+
+            return RedirectToAction("Details", new { id });
         }
 
         // GET: ElementLists/Create
@@ -264,6 +303,21 @@ namespace Sorting_App.Controllers
         private bool ElementListExists(int id)
         {
           return (_context.ElementLists?.Any(e => e.ID == id)).GetValueOrDefault();
+        }
+
+        static public IEnumerable<Element> GetElements(ElementList elementList, IEnumerable<string>? tags)
+        {
+            Sort? sort = elementList.Sorts.FirstOrDefault();
+            IEnumerable<Element> elements;
+            if (sort != default && sort.IsSorted)
+                elements = SelectSort.GetOrdereredList(sort.SelectElements.ToArray(), sort.ElementComparisons);
+            else
+                elements = elementList.Elements;
+
+            if (tags == null || !tags.Any())
+                return elements;
+            else
+                return elements.Where(x => x.Tags != null && x.Tags.Any(y => tags.Any(z => y.Tag == z)));
         }
     }
 }

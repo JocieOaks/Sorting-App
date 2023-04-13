@@ -3,6 +3,8 @@
 @{
     ViewData["Title"] = "Create";
 }
+<script type="text/javascript" src="~/lib/jquery/dist/jquery.js"></script>
+<script type="text/javascript" src="~/js/site.js"></script>
 
 <h1>Create</h1>
 
@@ -34,7 +36,7 @@
 </div>
 
 <div>
-    <a asp-action="Index" asp-route-id="@Model.List.ID">Back to List</a>
+    <a asp-controller="ElementLists" asp-action="Details" asp-route-id="@Model.List.ID">Back to List</a>
 </div>
 
 @section Scripts {

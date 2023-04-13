@@ -34,7 +34,7 @@ namespace Sorting_App.Migrations
 
                     b.HasIndex("TagsID");
 
-                    b.ToTable("ElementElementTag");
+                    b.ToTable("ElementElementTag", (string)null);
                 });
 
             modelBuilder.Entity("Sorting_App.Models.Element", b =>
@@ -59,7 +59,7 @@ namespace Sorting_App.Migrations
 
                     b.HasIndex("ListID");
 
-                    b.ToTable("Elements");
+                    b.ToTable("Elements", (string)null);
                 });
 
             modelBuilder.Entity("Sorting_App.Models.ElementComparison", b =>
@@ -90,7 +90,7 @@ namespace Sorting_App.Migrations
 
                     b.HasIndex("SortID");
 
-                    b.ToTable("ElementComparisons");
+                    b.ToTable("ElementComparisons", (string)null);
                 });
 
             modelBuilder.Entity("Sorting_App.Models.ElementList", b =>
@@ -110,7 +110,7 @@ namespace Sorting_App.Migrations
 
                     b.HasKey("ID");
 
-                    b.ToTable("ElementLists");
+                    b.ToTable("ElementLists", (string)null);
                 });
 
             modelBuilder.Entity("Sorting_App.Models.ElementTag", b =>
@@ -132,7 +132,7 @@ namespace Sorting_App.Migrations
 
                     b.HasIndex("ListID");
 
-                    b.ToTable("Tags");
+                    b.ToTable("Tags", (string)null);
                 });
 
             modelBuilder.Entity("Sorting_App.Models.SelectElement", b =>
@@ -170,7 +170,7 @@ namespace Sorting_App.Migrations
 
                     b.HasIndex("SortID");
 
-                    b.ToTable("SelectElements");
+                    b.ToTable("SelectElements", (string)null);
                 });
 
             modelBuilder.Entity("Sorting_App.Models.Sort", b =>
@@ -194,7 +194,7 @@ namespace Sorting_App.Migrations
 
                     b.HasIndex("ElementListID");
 
-                    b.ToTable("Sorts");
+                    b.ToTable("Sorts", (string)null);
                 });
 
             modelBuilder.Entity("ElementElementTag", b =>

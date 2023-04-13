@@ -1,4 +1,6 @@
-﻿namespace Sorting_App.Models
+﻿using Microsoft.EntityFrameworkCore;
+
+namespace Sorting_App.Models
 {
     /// <summary>
     /// The <see cref="ElementTag"/> class is the model for tags associated with an <see cref="Element"/>.

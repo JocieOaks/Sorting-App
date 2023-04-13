@@ -1,46 +1,41 @@
-﻿@model Sorting_App.Models.ElementList
-
+﻿@model (Sorting_App.Models.ElementList elementList, IEnumerable<string>? tags)
 @{
     ViewData["Title"] = "Details";
+    if(Model.tags != null)
+        TempData["tags"] = Model.tags;
 }
 
 <h1>Details</h1>
 <p>
-    <a asp-controller="Elements" asp-action="Create" asp-route-id="@Model.ID">Create New</a> | @{
-        Sort? sort = Model.Sorts.FirstOrDefault();
+    <a asp-controller="Elements" asp-action="Create" asp-route-id="@Model.elementList.ID">Create New</a> | @{
+        Sort? sort = Model.elementList.Sorts.FirstOrDefault();
         if (sort == default)
         {
-            <a asp-action="StartSort" asp-route-id="@Model.ID">Sort</a>
+            <a asp-action="StartSort" asp-route-id="@Model.elementList.ID">Sort</a>
         }
         else if(!sort.IsSorted)
         {
-            <a asp-action="Compare" asp-route-id="@sort.ID">Continue Sort</a> <a>|</a> <a asp-action="StartSort" asp-route-id="@Model.ID">Restart Sort</a>
+            <a asp-action="Compare" asp-route-id="@sort.ID">Continue Sort</a> <a>|</a> <a asp-action="StartSort" asp-route-id="@Model.elementList.ID">Restart Sort</a>
         }
         else
         {
-            <a asp-action="StartSort" asp-route-id="@Model.ID">Re-Sort</a>
+            <a asp-action="StartSort" asp-route-id="@Model.elementList.ID">Re-Sort</a>
         }
     }
 </p>
 <div class="flex-container">
-    @{
-        if (sort != default && sort.IsSorted)
-        {
-            <partial name="~/Views/Elements/Index.cshtml" model="Select_Sort.SelectSort.GetOrdereredList(sort.SelectElements.ToArray(), sort.ElementComparisons)" />
-        }
-        else
-        {    
-            <partial name="~/Views/Elements/Index.cshtml" model="Model.Elements"/>
-        }
-    }
+
+    <partial name="~/Views/Elements/Index.cshtml" model="@Sorting_App.Controllers.ElementListsController.GetElements(Model.elementList, Model.tags)" />
     <div class="tags">
-        @foreach (ElementTag tag in Model.Tags)
+        @foreach (ElementTag tag in Model.elementList.Tags)
         {
-            @Html.DisplayFor(x => tag.Tag)
+                <a asp-action="Constrain" class="@(Model.tags != null && Model.tags.Any(x => x == tag.Tag) ? "btn btn-outline-danger" : "btn btn-light")" asp-route-id="@Model.elementList.ID" asp-route-tag="@tag.Tag">@Html.DisplayFor(x => tag.Tag)</a>
         }
+
+        <span class="clear-button"><a asp-action="ClearTags" class="btn btn-danger" asp-route-id="@Model.elementList.ID">Clear Tags</a></span>
     </div>
 </div>
 <div>
-    <a asp-action="Edit" asp-route-id="@Model?.ID">Edit</a> |
+    <a asp-action="Edit" asp-route-id="@Model.elementList?.ID">Edit</a> |
     <a asp-action="Index">Back to List</a>
 </div>

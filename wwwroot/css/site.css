@@ -46,3 +46,8 @@ body {
 .tags{
     flex: 1;
 }
+
+.clear-button {
+    bottom: 0;
+    right: 0;
+}
