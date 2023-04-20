@@ -1,17 +1,19 @@
 ﻿using Select_Sort;
 using System.ComponentModel.DataAnnotations.Schema;
 
+#nullable disable
+
 namespace Sorting_App.Models
 {
     /// <summary>
-    /// The <see cref="SelectElement"/> class contains the data for each element being sorted by <see cref="SelectSort"/>. 
+    /// The <see cref="SelectElement"/> class is the model containing data for an associated <see cref="Models.Element"/> being sorted by a <see cref="Sort"/>. 
     /// </summary>
     public class SelectElement
     {
         /// <summary>
         /// Intitailizes a new instance of the <see cref="SelectElement"/> class.
         /// </summary>
-        /// <param name="element">The element being sorted by <see cref="SelectSort{T}"/>.</param>
+        /// <param name="element">The element being sorted by <see cref="Sort"/>.</param>
         public SelectElement(Element element, int index)
         {
             Element = element;
@@ -23,12 +25,13 @@ namespace Sorting_App.Models
         /// </summary>
         public SelectElement() { }
 
-        /// <value>The element of type <see cref="T"/> being sorted.</value>
+        /// <value>The <see cref="Models.Element"/> being sorted.</value>
         public Element Element { get; private set; }
 
+        /// <value>The database ID associated with this <see cref="SelectElement"/>.</value>
         public int ID { get; private set; }
 
-        /// <value>The index of the <see cref="SelectElement"/> in the unsorted list.</value>
+        /// <value>The index of the <see cref="SelectElement"/> in a <see cref="Sort"/>.</value>
         public int Index { get; private set; }
 
         /// <value>The last time that <see cref="Element"/> was presented as an option, based on the count of options that have been shown.</value>

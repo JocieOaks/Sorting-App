@@ -31,8 +31,10 @@
         {
                 <a asp-action="Constrain" class="@(Model.tags != null && Model.tags.Any(x => x == tag.Tag) ? "btn btn-outline-danger" : "btn btn-light")" asp-route-id="@Model.elementList.ID" asp-route-tag="@tag.Tag">@Html.DisplayFor(x => tag.Tag)</a>
         }
-
-        <span class="clear-button"><a asp-action="ClearTags" class="btn btn-danger" asp-route-id="@Model.elementList.ID">Clear Tags</a></span>
+        @if (Model.tags != null && Model.tags.Any())
+        {
+            <span class="clear-button"><a asp-action="ClearTags" class="btn btn-danger" asp-route-id="@Model.elementList.ID">Clear Tags</a></span>
+        }
     </div>
 </div>
 <div>

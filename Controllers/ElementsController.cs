@@ -105,7 +105,7 @@ namespace Sorting_App.Controllers
                 return NotFound();
             }
 
-            var element = await _context.Elements.FindAsync(id);
+            var element = await _context.Elements.Include(element => element.Tags).FirstOrDefaultAsync(m => m.ID == id);
             if (element == null)
             {
                 return NotFound();
@@ -231,7 +231,7 @@ namespace Sorting_App.Controllers
 
                 if(element.Tags != null)
                 {
-                    IEnumerable<ElementTag> removeTags = element.Tags.Where(x => !tags.Any(y => x.Tag == y));
+                    IEnumerable<ElementTag> removeTags = element.Tags.Where(x => !tags.Any(y => x.Tag == y)).ToList();
                     foreach(var tag in removeTags)
                     {
                         element.Tags.Remove(tag);
