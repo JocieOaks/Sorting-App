@@ -6,32 +6,32 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Sorting_App.Models
 {
     /// <summary>
-    /// The <see cref="SelectElement"/> class is the model containing data for an associated <see cref="Models.Element"/> being sorted by a <see cref="Sort"/>. 
+    /// The <see cref="SortingElement"/> class is the model containing data for an associated <see cref="Models.Element"/> being sorted by a <see cref="Sort"/>. 
     /// </summary>
-    public class SelectElement
+    public class SortingElement
     {
         /// <summary>
-        /// Intitailizes a new instance of the <see cref="SelectElement"/> class.
+        /// Intitailizes a new instance of the <see cref="SortingElement"/> class.
         /// </summary>
         /// <param name="element">The element being sorted by <see cref="Sort"/>.</param>
-        public SelectElement(Element element, int index)
+        public SortingElement(Element element, int index)
         {
             Element = element;
             Index = index;
         }
 
         /// <summary>
-        /// Initializes a new instace of the <see cref="SelectElement"/> class without parameters.
+        /// Initializes a new instace of the <see cref="SortingElement"/> class without parameters.
         /// </summary>
-        public SelectElement() { }
+        public SortingElement() { }
 
         /// <value>The <see cref="Models.Element"/> being sorted.</value>
         public Element Element { get; private set; }
 
-        /// <value>The database ID associated with this <see cref="SelectElement"/>.</value>
+        /// <value>The database ID associated with this <see cref="SortingElement"/>.</value>
         public int ID { get; private set; }
 
-        /// <value>The index of the <see cref="SelectElement"/> in a <see cref="Sort"/>.</value>
+        /// <value>The index of the <see cref="SortingElement"/> in a <see cref="Sort"/>.</value>
         public int Index { get; private set; }
 
         /// <value>The last time that <see cref="Element"/> was presented as an option, based on the count of options that have been shown.</value>
@@ -40,12 +40,12 @@ namespace Sorting_App.Models
         /// <value>The number of times the user has seen <see cref="Element"/> as an option for comparison.</value>
         public int NumberOfTimesAsOption { get; private set; } = 0;
 
-        /// <value>The amount to change <see cref="Score"/> by. Used to wait until all <see cref="SelectElement"/>'s have been evaluated so that their mutual
+        /// <value>The amount to change <see cref="Score"/> by. Used to wait until all <see cref="SortingElement"/>'s have been evaluated so that their mutual
         /// force can be applied symmetrically.</value>
         public float Push { get; set; }
 
-        /// <value>The estimated score of the <see cref="Element"/>, where all <see cref="SelectElement"/>s with a higher score are ranked higher than
-        /// <see cref="Element"/> and all <see cref="SelectElement"/>s with a lower score are ranked lower than <see cref="Element"/>.</value>
+        /// <value>The estimated score of the <see cref="Element"/>, where all <see cref="SortingElement"/>s with a higher score are ranked higher than
+        /// <see cref="Element"/> and all <see cref="SortingElement"/>s with a lower score are ranked lower than <see cref="Element"/>.</value>
         public float Score { get; private set; }
 
         /// <summary>
@@ -71,7 +71,7 @@ namespace Sorting_App.Models
         }
 
         /// <summary>
-        /// Called when <see cref="SelectElement"/> has been shown as an option to the user.
+        /// Called when <see cref="SortingElement"/> has been shown as an option to the user.
         /// </summary>
         /// <param name="selectionCount">The current number of selections that have been made.</param>
         public void OptionPresented(int selectionCount)

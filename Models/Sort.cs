@@ -11,14 +11,14 @@ namespace Sorting_App.Models
         /// <value>The <see cref="Models.ElementList"/> being sorted.</value>
         public ElementList ElementList { get; set; }
 
-        /// <value>The list of <see cref="ElementComparison"/>s that define the relations between each <see cref="SelectElement"/>.</value>
+        /// <value>The list of <see cref="ElementComparison"/>s that define the relations between each <see cref="SortingElement"/>.</value>
         public List<ElementComparison> ElementComparisons { get; set; }
 
         /// <value>The database ID associated with this <see cref="Sort"/>.</value>
         public int ID { get; set; }
 
-        /// <value>The <see cref="SelectElement"/>s created for this <see cref="Sort"/>.</value>
-        public List<SelectElement> SelectElements { get; set; }
+        /// <value>The <see cref="SortingElement"/>s created for this <see cref="Sort"/>.</value>
+        public List<SortingElement> SelectElements { get; set; }
 
         /// <value>Determines if all the <see cref="Element"/>s have been sorted, and thus, all the <see cref="ElementComparison"/> are solved.</value>
         public bool IsSorted { get; set; } = false;

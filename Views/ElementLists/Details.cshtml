@@ -15,7 +15,7 @@
         }
         else if(!sort.IsSorted)
         {
-            <a asp-action="Compare" asp-route-id="@sort.ID">Continue Sort</a> <a>|</a> <a asp-action="StartSort" asp-route-id="@Model.elementList.ID">Restart Sort</a>
+            <a asp-action="Compare" asp-route-sortID="@sort.ID">Continue Sort</a> <a>|</a> <a asp-action="StartSort" asp-route-id="@Model.elementList.ID">Restart Sort</a>
         }
         else
         {

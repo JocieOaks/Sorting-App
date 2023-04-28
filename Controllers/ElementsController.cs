@@ -16,51 +16,52 @@ using Azure;
 
 namespace Sorting_App.Controllers
 {
+    /// <summary>
+    /// The <see cref="ElementsController"/> class is an MVC <see cref="Controller"/> used to manipulate the <see cref="Element"/> model.
+    /// </summary>
     public class ElementsController : Controller
     {
         private readonly SortingContext _context;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ElementsController"/> class.
+        /// </summary>
+        /// <param name="context">The <see cref="SortingContext"/> used to query the database.</param>
         public ElementsController(SortingContext context)
         {
             _context = context;
         }
 
-        // GET: Elements/Details/5
-        public async Task<IActionResult> Details(int? id)
+        /// <summary>
+        /// Gives the MVC View for creating a new <see cref="Element"/>.
+        /// </summary>
+        /// <param name="listID">The ID number associated with the <see cref="ElementList"/> to which the newly created <see cref="Element"/> will be added.</param>
+        /// <returns>Returns the next View to show the user.</returns>
+        public async Task<IActionResult> Create(int? listID)
         {
-            if (id == null || _context.Elements == null)
-            {
-                return NotFound();
-            }
-
-            var element = await _context.Elements.Include(element => element.Tags)
-                .FirstOrDefaultAsync(m => m.ID == id);
-            if (element == null)
-            {
-                return NotFound();
-            }
-
-            return View(element);
-        }
-
-        // GET: Elements/Create
-        public async Task<IActionResult> Create(int? id)
-        {
-            if (id == null || _context.ElementLists == null)
+            if (listID == null || _context.ElementLists == null)
                 return NotFound();
 
             var elementList = await _context.ElementLists
-                .FirstOrDefaultAsync(m => m.ID == id);
+                .FirstOrDefaultAsync(m => m.ID == listID);
             if (elementList == null)
             {
                 return NotFound();
             }
-            return View(new Element() { List = elementList});
+            return View(new Element() { List = elementList });
         }
 
-        // POST: Elements/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        /// <summary>
+        /// Creates a new <see cref="Element"/> based on input from the user.
+        /// </summary>
+        /// <param name="element">The newly created <see cref="Element"/> with it's <see cref="Element.Name"/> and <see cref="ElementList"/> bound.</param>
+        /// <param name="image">The image associated with the <see cref="Element"/>, if one is given.</param>
+        /// <param name="tagsString">The string that contains a comma seperated list of the <see cref="ElementTag"/>s for this element.
+        /// This was made as a separate parameter instead of being bound to <c>element</c> because the <see cref="ElementTag"/> class
+        /// contains a reference to the <see cref="Element"/>s it's on.
+        /// However, this may be unnecessary, as that is rarely used.</param>
+        /// <param name="listID">The ID number associated with the <see cref="ElementList"/> to which the newly created <see cref="Element"/> will be added.</param>
+        /// <returns>Returns the next View to show the user.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Name,List")] Element element, IFormFile? image, string? tagsString, int? listID)
@@ -78,8 +79,8 @@ namespace Sorting_App.Controllers
 
             if (ModelState.IsValid)
             {
-                if(image != null)
-                    using(var ms = new MemoryStream())
+                if (image != null)
+                    using (var ms = new MemoryStream())
                     {
                         image.CopyTo(ms);
                         element.Image = ms.ToArray();
@@ -92,12 +93,91 @@ namespace Sorting_App.Controllers
                 _context.Add(element);
                 _context.Update(elementList);
                 await _context.SaveChangesAsync();
-                return RedirectToAction("Details", "ElementLists", new {id = listID});
+                return RedirectToAction("Details", "ElementLists", new { id = listID });
             }
             return View(element);
         }
 
-        // GET: Elements/Edit/5
+        /// <summary>
+        /// Gives the MVC View for deleting an <see cref="Element"/>.
+        /// </summary>
+        /// <param name="id">The ID number associated with the <see cref="Element"/> to be deleted.</param>
+        /// <returns>Returns the next View to show the user.</returns>
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id == null || _context.Elements == null)
+            {
+                return NotFound();
+            }
+
+            var element = await _context.Elements
+                .FirstOrDefaultAsync(m => m.ID == id);
+            if (element == null)
+            {
+                return NotFound();
+            }
+
+            return View(element);
+        }
+
+        /// <summary>
+        /// Deletes the given <see cref="Element"/> from the database.
+        /// </summary>
+        /// <param name="id">The ID number associated with the deleted <see cref="Element"/>.</param>
+        /// <returns>Returns the next View to show the user.</returns>
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            if (_context.Elements == null)
+            {
+                return Problem("Entity set 'SortingContext.Elements'  is null.");
+            }
+            var element = await _context.Elements
+                .FirstOrDefaultAsync(x => x.ID == id);
+
+            if (element != null)
+            {
+                _context.RemoveElement(element);
+            }
+
+            await _context.SaveChangesAsync();
+            if (element != null)
+            {
+                return RedirectToAction("Details", "ElementLists", new { id = element.List.ID });
+            }
+            else
+                return RedirectToAction("Index", "ElementLists");
+        }
+
+
+        /// <summary>
+        /// Gives the MVC View for showing the details of an <see cref="Element"/>.
+        /// </summary>
+        /// <param name="id">The ID number associated with the <see cref="Element"/>.</param>
+        /// <returns>Returns the next View to show the user.</returns>
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id == null || _context.Elements == null)
+            {
+                return NotFound();
+            }
+
+            var element = await _context.Elements.Include(element => element.Tags)
+                .FirstOrDefaultAsync(m => m.ID == id);
+            if (element == null)
+            {
+                return NotFound();
+            }
+
+            return View(element);
+        }
+
+        /// <summary>
+        /// Gives the MVC View for editing the details of an <see cref="Element"/>.
+        /// </summary>
+        /// <param name="id">The ID associated with the <see cref="Element"/> to be edited.</param>
+        /// <returns>Returns the next View to show the user.</returns>
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null || _context.Elements == null)
@@ -113,9 +193,18 @@ namespace Sorting_App.Controllers
             return View(element);
         }
 
-        // POST: Elements/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        /// <summary>
+        /// Edits an <see cref="Element"/> based on input from the user.
+        /// </summary>
+        /// <param name="id">The ID number associated with the <see cref="Element"/> being edited.</param>
+        /// <param name="Name">The name for the <see cref="Element"/>.</param>
+        /// <param name="image">The new image associated with the <see cref="Element"/>, if one is given.</param>
+        /// <param name="tagsString">The string that contains a comma seperated list of the <see cref="ElementTag"/>s for this element.
+        /// This was made as a separate parameter instead of being bound to <c>element</c> because the <see cref="ElementTag"/> class
+        /// contains a reference to the <see cref="Element"/>s it's on.
+        /// However, this may be unnecessary, as that is rarely used.</param>
+        /// <param name="listID">The ID number associated with the <see cref="ElementList"/>.</param>
+        /// <returns>Returns the next View to show the user.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int? id, string Name, IFormFile? image, string? tagsString, int? listID)
@@ -143,6 +232,7 @@ namespace Sorting_App.Controllers
 
             try
             {
+                element.Name = Name;
                 if (image != null)
                     using (var ms = new MemoryStream())
                     {
@@ -170,55 +260,22 @@ namespace Sorting_App.Controllers
             return RedirectToAction("Details", "ElementLists", new { id = listID });
         }
 
-        // GET: Elements/Delete/5
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null || _context.Elements == null)
-            {
-                return NotFound();
-            }
-
-            var element = await _context.Elements
-                .FirstOrDefaultAsync(m => m.ID == id);
-            if (element == null)
-            {
-                return NotFound();
-            }
-
-            return View(element);
-        }
-
-        // POST: Elements/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            if (_context.Elements == null)
-            {
-                return Problem("Entity set 'SortingContext.Elements'  is null.");
-            }
-            var element = await _context.Elements
-                .FirstOrDefaultAsync(x => x.ID == id);
-
-            if (element != null)
-            {
-                _context.RemoveElement(element);
-            }
-
-            await _context.SaveChangesAsync();
-            if (element != null)
-            {
-                return RedirectToAction("Details", "ElementLists", new { id = element.List.ID });
-            }
-            else
-                return RedirectToAction("Index", "ElementLists");
-        }
-
+        /// <summary>
+        /// Determines if an <see cref="Element"/> with the given ID is in the database.
+        /// </summary>
+        /// <param name="id">The ID number associated with the <see cref="Element"/> being searched for.</param>
+        /// <returns>Returns true if the <see cref="Element"/> is found.</returns>
         private bool ElementExists(int id)
         {
           return (_context.Elements?.Any(e => e.ID == id)).GetValueOrDefault();
         }
 
+        /// <summary>
+        /// Takes a string designating the list of <see cref="ElementTag"/>s and adds them to a given <see cref="Element"/>.
+        /// </summary>
+        /// <param name="tagString">The list of <see cref="ElementTag"/>s as a comma separated string.</param>
+        /// <param name="element">The <see cref="Element"/> with the <see cref="ElementTag"/>s.</param>
+        /// <param name="elementList">The <see cref="ElementList"/> to which both the <see cref="Element"/> and <see cref="ElementTag"/>s belong.</param>
         private void GetTags(string? tagString, Element element, ElementList elementList)
         {
             if (tagString != null)
